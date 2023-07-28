@@ -30,7 +30,7 @@ const PokemonPage: NextPage<Props> = ({ pokemon }) => {
 
       if ( isInFavorites ) return;
         
-    confetti({
+      confetti({
         zIndex: 999,
         particleCount: 100,
         spread: 160,
@@ -45,7 +45,7 @@ const PokemonPage: NextPage<Props> = ({ pokemon }) => {
 
     
     return (
-       <Layout title={ pokemon.name }>
+        <Layout title={ pokemon.name }>
            
            <Grid.Container css={{ marginTop: '5px' }} gap={ 2 }>
               <Grid xs={ 12 } sm={ 4 } >
@@ -122,7 +122,6 @@ const PokemonPage: NextPage<Props> = ({ pokemon }) => {
 };
 
 
-// You should use getStaticPaths if you’re statically pre-rendering pages that use dynamic routes
 
 export const getStaticPaths: GetStaticPaths = async (ctx) => {
 
@@ -132,7 +131,8 @@ export const getStaticPaths: GetStaticPaths = async (ctx) => {
     paths: pokemons151.map( id => ({
       params: { id }
     })),
-    fallback: false
+    
+    fallback: 'blocking'
   }
 }
 
@@ -142,10 +142,23 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
   
   const { id } = params as { id: string };
 
+  const pokemon = await getPokemonInfo( id );
+
+  if ( !pokemon ) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false
+      }
+    }
+  }
+
+
   return {
     props: {
-      pokemon: await getPokemonInfo( id )
-    }
+      pokemon
+    },
+    revalidate: 86400, // 60 * 60 * 24,
   }
 }
 
